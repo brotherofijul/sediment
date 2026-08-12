@@ -1,0 +1,34 @@
+name: Cross Compile ARM64 Binary
+
+on:
+  workflow_dispatch: # Memungkinkan kamu menjalankan build secara manual lewat tombol
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Install Cross-Compilation Linker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - name: Build Binary (Release)
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+        run: |
+          cargo build --release --target aarch64-unknown-linux-gnu
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sediment-aarch64-linux-gnu
+          path: target/aarch64-unknown-linux-gnu/release/sediment
+          
